@@ -12,6 +12,7 @@ import {
   } from '@mui/material';
   import DashboardIcon from '@mui/icons-material/Dashboard';
   import SettingsIcon from '@mui/icons-material/Settings';
+  import GroupIcon from '@mui/icons-material/Group';
   import { useNavigate, useLocation } from 'react-router-dom';
   import React from 'react';
   import Logo from '../../Assets/logo.png'
@@ -33,14 +34,14 @@ import {
     const location = useLocation();
   
     const menuItems: menuItemsProps[] = [
-      { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-      { text: 'Employee', icon: <SettingsIcon />, path: '/employee' },
+      { text: 'Dashboard', icon: <DashboardIcon className='text-dark' />, path: '/' },
+      { text: 'Employee', icon: <GroupIcon className='text-dark' />, path: '/employee' },
     ];
   
     return (
-      <Box sx={{ display: 'flex' }}>
+      <Box sx={{ display: 'flex' }} className="h-[100vh]">
         {/* AppBar */}
-        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }} className='!bg-black'>
+        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }} className='!bg-dark'>
           <Toolbar>
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 0 }}>
                 <img
@@ -49,7 +50,7 @@ import {
                     style={{ width: 65, height: 65}}
                 />
             </Box>
-            <Typography variant="h6" noWrap className='text-white'>
+            <Typography variant="h6" noWrap className='text-white text-pri'>
               Managely Crew
             </Typography>
           </Toolbar>
@@ -74,6 +75,15 @@ import {
                 key={item.text}
                 selected={location.pathname === item.path}
                 onClick={() => navigate(item.path)}
+                sx={{
+                  '&.Mui-selected': {
+                    backgroundColor: '#E6EEF3', // warna selected
+                    color: '#0F0F10',           // warna teks saat selected
+                  },
+                  '&.Mui-selected:hover': {
+                    backgroundColor: '#E6EEF3', // hover saat selected
+                  },
+                }}
               >
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
@@ -83,7 +93,7 @@ import {
         </Drawer>
   
         {/* Main Content */}
-        <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}>
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }} className='bg-light'>
           <Toolbar />
           {children}
         </Box>

@@ -7,7 +7,11 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Box, TablePagination, Typography } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import SortIcon from '@mui/icons-material/Sort';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import AddIcon from '@mui/icons-material/Add';
+import { Box, Button, InputAdornment, ListItemText, Menu, MenuItem, Stack, TablePagination, TextField, Typography } from '@mui/material';
 
 function createData(
   name: string,
@@ -30,6 +34,29 @@ const rows = [
 const EmployeeList = () => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [sortBy, setSortBy] = React.useState('name');
+  const open = Boolean(anchorEl);
+  const options = [
+  { label: 'Name', value: 'name' },
+  { label: 'Date Created', value: 'dateCreated' },
+  { label: 'Status', value: 'status' },
+];
+
+  const handleClick = (event: any) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSelect = (option: any) => {
+    // onChange(option);
+    setSortBy(option)
+    handleClose();
+  };
+
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -40,18 +67,68 @@ const EmployeeList = () => {
   };
   return (
     <>
-      <Typography variant="h4" noWrap className='text-black'>
+      <Typography variant="h5" noWrap className='text-black'>
         Employee
       </Typography>
-      <TableContainer component={Paper} className='mt-5'>
+      <br />
+      <TextField
+        // value={value}
+        // onChange={onChange}
+        placeholder={"Search..."}
+        size="small"
+        variant="outlined"
+        sx={{ width: '100%', maxWidth: 300, background: "white", marginRight: '1rem' }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          ),
+        }}
+      />
+      <>
+        <Button
+          variant="outlined"
+          size="medium"
+          onClick={handleClick}
+          startIcon={<SortIcon fontSize="small" />}
+          endIcon={<ArrowDropDownIcon fontSize="small" />}
+          sx={{ textTransform: 'none' , background: "white", borderColor: "#B4BDC6", paddingBlock: '0.45rem', color:"#475766"}}
+        >
+          Sort by
+        </Button>
+
+        <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+          {options.map((option) => (
+            <MenuItem
+              key={option.value}
+              selected={sortBy === option.value}
+              onClick={() => handleSelect(option.value)}
+            >
+              <ListItemText>{option.label}</ListItemText>
+            </MenuItem>
+          ))}
+        </Menu>
+      </>
+      <Button
+        variant="contained"
+        size="medium"
+        // onClick={handleClick}
+        startIcon={<AddIcon fontSize="small" />}
+        sx={{ textTransform: 'none', paddingBlock: '0.45rem', marginLeft: '1rem'}}
+      >
+        Add New Employee
+      </Button>
+      
+      <TableContainer component={Paper} className='mt-5 !bg-white'>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
-          <TableHead>
+          <TableHead className='bg-primary-200'>
             <TableRow>
-              <TableCell>Dessert (100g serving)</TableCell>
-              <TableCell align="right">Calories</TableCell>
-              <TableCell align="right">Fat&nbsp;(g)</TableCell>
-              <TableCell align="right">Carbs&nbsp;(g)</TableCell>
-              <TableCell align="right">Protein&nbsp;(g)</TableCell>
+              <TableCell className='!text-black'>Dessert (100g serving)</TableCell>
+              <TableCell align="right" className='!text-black'>Calories</TableCell>
+              <TableCell align="right" className='!text-black'>Fat&nbsp;(g)</TableCell>
+              <TableCell align="right" className='!text-black'>Carbs&nbsp;(g)</TableCell>
+              <TableCell align="right" className='!text-black'>Protein&nbsp;(g)</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
