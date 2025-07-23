@@ -23,7 +23,7 @@ import {
     children: React.ReactNode;
   }
 
-  interface menuItemsProps {
+  interface MenuItemsProps {
     text: string;
     icon: React.ReactNode;
     path: string;
@@ -33,7 +33,7 @@ import {
     const navigate = useNavigate();
     const location = useLocation();
   
-    const menuItems: menuItemsProps[] = [
+    const menuItems: MenuItemsProps[] = [
       { text: 'Dashboard', icon: <DashboardIcon className='text-dark' />, path: '/' },
       { text: 'Employee', icon: <GroupIcon className='text-dark' />, path: '/employee' },
     ];
