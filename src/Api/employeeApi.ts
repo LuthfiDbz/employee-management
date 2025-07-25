@@ -1,17 +1,16 @@
+import { BodyModifyEmployee } from '../Interface/Pages/employeeInterface';
 import axiosInstance from './axiosInstance';
 
 const employeeApi = {
   getEmployee: (params?: any) => axiosInstance.get(`https://dummyjson.com/users`, {
-    params: { limit: params?.limit, skip: params?.skip, select: params?.select, sortBy: params?.sortBy, order: 'asc'  },
+    params: { limit: params?.limit, skip: params?.skip, select: params?.select, sortBy: params?.sortBy || 'id', order: params?.order || 'desc'  },
   }),
   getSearchEmployee: (params?: any) => axiosInstance.get(`https://dummyjson.com/users/search`, {
-    params: { limit: params?.limit, skip: params?.skip, select: params?.select, q: params?.search, sortBy: params?.sortBy, order: 'asc' },
+    params: { limit: params?.limit, skip: params?.skip, select: params?.select, q: params?.search, sortBy: params?.sortBy || 'id', order: params?.order || 'desc' },
   }),
-  // getUserDetail: (id: number) => axiosInstance.get(endpoints.user.detail(id)),
-  // createUser: (data: any) => axiosInstance.post(endpoints.user.create, data),
-  // updateUser: (id: number, data: any) =>
-  //   axiosInstance.put(endpoints.user.detail(id), data),
-  // deleteUser: (id: number) => axiosInstance.delete(endpoints.user.detail(id)),
+  addEmployee: (body: BodyModifyEmployee) => axiosInstance.post('https://dummyjson.com/users/add', body),
+  updateEmployee: (id: number, body: BodyModifyEmployee) => axiosInstance.put(`https://dummyjson.com/users/${id}`, body),
+  deleteEmployee: (id: number) => axiosInstance.delete(`https://dummyjson.com/users/${id}`),
 };
 
-export default employeeApi;
+export default employeeApi; 

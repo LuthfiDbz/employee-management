@@ -11,15 +11,19 @@ import SearchIcon from '@mui/icons-material/Search';
 import SortIcon from '@mui/icons-material/Sort';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import AddIcon from '@mui/icons-material/Add';
-import { Box, Button, Chip, CircularProgress, InputAdornment, ListItemText, Menu, MenuItem, Stack, TablePagination, TextField, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { Box, Button, Chip, CircularProgress, Divider, InputAdornment, ListItemText, Menu, MenuItem, Stack, TablePagination, TextField, Typography } from '@mui/material';
 import employeeApi from '../../Api/employeeApi';
 import AlertSnackbar from '../../Component/Alert/AlertSnackbar';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import PersonIcon from '@mui/icons-material/Person';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import { BodyModifyEmployee, FormEmployee } from '../../Interface/Pages/employeeInterface';
+import ModifyEmployee from '../../Component/Modal/ModifyEmployee';
 
-interface Column {
+type Column = {
   name: string;
   key: string;
   icon?: any;
@@ -27,30 +31,23 @@ interface Column {
   render?: (value: any, record: any, index: number) => React.ReactNode;
 }
 
-function createData(
-  name: string,
-  calories: number,
-  fat: number,
-  carbs: number,
-  protein: number,
-) {
-  return { name, calories, fat, carbs, protein };
-}
 
-const columns: Column[] = [
-  { name: 'ID', key: 'ssn' },
-  { name: 'Name', key: 'firstName' , render: (value, record) => <div className='flex items-center gap-2'><img src={record?.image} width={40}></img> {value} {record?.lastName}</div>},
-  { name: 'Age', key: 'age', align: 'center' },
-  // { name: 'Gender', key: 'gender', align: 'center' },
-  { name: 'Email', key: 'email' },
-  { name: 'Phone', key: 'phone' },
-  { name: 'Job Title', key: 'company', render: (value) => <>{value?.title}</> },
-  { name: 'Department', key: 'company', render: (value) => <>{value?.department}</> },
-  // { name: 'Status', key: 'status', render: (value) => <span>{value ? <Chip label="Active" color="primary" /> : <Chip label="Inactive" color="error" />}</span> },
-];
+
+
+const initialFormEmployee: FormEmployee = {
+  ssn: "",
+  firstName: "",
+  lastName: "",
+  age: "",
+  email: "",
+  phone: "",
+  title: "",
+  department: ""
+}
 
 
 const EmployeeList = () => {
+  const [openModifyEmployee, setOpenModifyEmployee] = React.useState({ visible: false })
   const [loading, setLoading] = React.useState(false)
   const [alert, setAlert] = React.useState({
     open: false,
@@ -63,6 +60,7 @@ const EmployeeList = () => {
   })
   const [search, setSearch] = React.useState('')
   const [employeeData, setEmployeeData] = React.useState<any>([])
+  const [formEmployee, setFormEmployee] = React.useState(initialFormEmployee)
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [sortBy, setSortBy] = React.useState('');
   const open = Boolean(anchorEl);
@@ -88,12 +86,14 @@ const EmployeeList = () => {
             limit: pagination?.perPage,
             skip: pagination?.page * pagination?.perPage,
             search: search,
-            ...(sortBy !== '') && {sortBy: sortBy} 
+            ...(sortBy !== '') && {sortBy: sortBy},
+            ...(sortBy !== '') && {order: 'asc'} 
           })
           : await employeeApi.getEmployee({
             limit: pagination?.perPage,
             skip: pagination?.page * pagination?.perPage,
-            ...(sortBy !== '') && {sortBy: sortBy} 
+            ...(sortBy !== '') && {sortBy: sortBy},
+            ...(sortBy !== '') && {order: 'asc'} 
           });
 
       const data = res.data;
@@ -115,12 +115,9 @@ const EmployeeList = () => {
   };
   
   const handleSelect = (option: any) => {
-    // onChange(option);
     setSortBy(option)
-    // getAllEmployees()
     handleClose();
   };
-
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPagination((prev) => ({
@@ -136,7 +133,7 @@ const EmployeeList = () => {
     });
   };
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       setPagination({
         page: 0,
@@ -145,60 +142,141 @@ const EmployeeList = () => {
       getAllEmployees(); // Trigger function dengan keyword
     }
   };
+
+
+  const onFinishModifyEmployee = async () => {
+    const payload: BodyModifyEmployee = {
+      ssn: formEmployee?.ssn,
+      firstName: formEmployee?.firstName,
+      lastName: formEmployee?.lastName,
+      age: formEmployee?.age,
+      email: formEmployee?.email,
+      phone: formEmployee?.phone,
+      company: {
+        title: formEmployee?.title,
+        department: formEmployee?.department
+      }
+    }
+
+    console.log(formEmployee)
+    console.log(payload)
+    // return
+
+    setLoading(true)
+    try {
+      const { data } = await employeeApi.addEmployee(payload)
+      console.log(data)
+      setAlert({ open: true, message: "New employee has been added!", severity: "success" });
+    } catch (error: any) {
+      setAlert({ open: true, message: error.message, severity: "error" });
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const columns: Column[] = [
+  { name: 'ID', key: 'ssn' },
+  { name: 'Name', key: 'firstName' , render: (value, record) => <div className='flex items-center gap-2'><img src={record?.image} width={40}></img> {value} {record?.lastName}</div>},
+  { name: 'Age', key: 'age', align: 'center' },
+  // { name: 'Gender', key: 'gender', align: 'center' },
+  { name: 'Email', key: 'email' },
+  { name: 'Phone', key: 'phone' },
+  { name: 'Job Title', key: 'company', render: (value) => <>{value?.title}</> },
+  { name: 'Department', key: 'company', render: (value) => <>{value?.department}</> },
+  // { name: 'Status', key: 'status', render: (value) => <span>{value ? <Chip label="Active" color="primary" /> : <Chip label="Inactive" color="error" />}</span> },
+  { 
+    name: 'Action', 
+    key: 'action', 
+    render: (value, record) => (
+      <div className='flex items-center gap-2'>
+        <Button
+          variant="contained"
+          size="small"
+          color='success'
+          onClick={() => {
+            setFormEmployee({...record, title: record?.company?.title, department: record?.company?.department})
+            setOpenModifyEmployee({ visible: true })
+          }}
+          startIcon={<EditIcon fontSize="small" />}
+          sx={{ textTransform: 'none'}}
+        >
+          Edit
+        </Button>
+        <Button
+          variant="contained"
+          size="small"
+          color='error'
+          // onClick={handleSort}
+          startIcon={<DeleteIcon fontSize="small" />}
+          sx={{ textTransform: 'none'}}
+        >
+          Delete
+        </Button>
+      </div>
+    ) },
+];
+
   return (
     <>
-      <Typography variant="h5" noWrap className='text-black'>
-        Employee
-      </Typography>
-      <br />
-      <TextField
-        placeholder={"Search..."}
-        size="small"
-        variant="outlined"
-        onKeyDown={handleKeyDown}
-        onChange={(e) => setSearch(e.target.value)}
-        sx={{ width: '100%', maxWidth: 300, background: "white", marginRight: '1rem' }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon />
-            </InputAdornment>
-          ),
-        }}
-      />
-      <>
+      <div className='flex items-center justify-between'>
+        <Typography variant="h4" noWrap className='text-black'>
+          Employee
+        </Typography>
         <Button
-          variant="outlined"
+          variant="contained"
           size="medium"
-          onClick={handleSort}
-          startIcon={<SortIcon fontSize="small" />}
-          endIcon={<ArrowDropDownIcon fontSize="small" />}
-          sx={{ textTransform: 'none' , background: "white", borderColor: "#B4BDC6", paddingBlock: '0.45rem', color:"#475766"}}
+          onClick={() => setOpenModifyEmployee({ visible: true })}
+          startIcon={<AddIcon fontSize="small" />}
+          sx={{ textTransform: 'none', paddingBlock: '0.45rem', marginLeft: '1rem'}}
         >
-          Sort by
+          Add New Employee
         </Button>
+      </div>
+      <br />
+      <Divider />
+      <br />
+      <div className='flex justify-between'>
+        <TextField
+          placeholder={"Search..."}
+          size="small"
+          variant="outlined"
+          onKeyDown={handleSearch}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{ width: '100%', maxWidth: 500, background: "white", marginRight: '1rem' }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+        />
+        <>
+          <Button
+            variant="outlined"
+            size="medium"
+            onClick={handleSort}
+            startIcon={<SortIcon fontSize="small" />}
+            endIcon={<ArrowDropDownIcon fontSize="small" />}
+            sx={{ textTransform: 'none' , background: "white", borderColor: "#B4BDC6", paddingBlock: '0.45rem', color:"#475766"}}
+          >
+            Sort by
+          </Button>
 
-        <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-          {options.map((option) => (
-            <MenuItem
-              key={option.value}
-              selected={sortBy === option.value}
-              onClick={() => handleSelect(option.value)}
-            >
-              <ListItemText>{option.label}</ListItemText>
-            </MenuItem>
-          ))}
-        </Menu>
-      </>
-      <Button
-        variant="contained"
-        size="medium"
-        // onClick={handleSort}
-        startIcon={<AddIcon fontSize="small" />}
-        sx={{ textTransform: 'none', paddingBlock: '0.45rem', marginLeft: '1rem'}}
-      >
-        Add New Employee
-      </Button>
+          <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+            {options.map((option) => (
+              <MenuItem
+                key={option.value}
+                selected={sortBy === option.value}
+                onClick={() => handleSelect(option.value)}
+              >
+                <ListItemText>{option.label}</ListItemText>
+              </MenuItem>
+            ))}
+          </Menu>
+        </>
+      </div>
+      
       
       <TableContainer component={Paper} className='mt-5 !bg-white'>
         <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -275,6 +353,16 @@ const EmployeeList = () => {
         message={alert.message}
         severity={alert.severity}
         onClose={() => setAlert({ ...alert, open: false })}
+      />
+
+      <ModifyEmployee 
+        open={openModifyEmployee}
+        setOpen={setOpenModifyEmployee}
+        form={formEmployee}
+        setForm={setFormEmployee}
+        resetForm={() => setFormEmployee(initialFormEmployee)}
+        loading={loading}
+        onFinish={onFinishModifyEmployee}
       />
     </>
   );
