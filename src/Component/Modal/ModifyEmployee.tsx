@@ -37,16 +37,6 @@ const ModifyEmployee: React.FC<Props> = ({
   loading,
   onFinish
 }) => {
-
-  useEffect(() => {
-    if(form?.id) {
-
-    } else {
-      resetForm()
-    }
-  }, [open])
-  
-  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));

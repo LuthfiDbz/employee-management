@@ -9,8 +9,8 @@ const employeeApi = {
     params: { limit: params?.limit, skip: params?.skip, select: params?.select, q: params?.search, sortBy: params?.sortBy || 'id', order: params?.order || 'desc' },
   }),
   addEmployee: (body: BodyModifyEmployee) => axiosInstance.post('https://dummyjson.com/users/add', body),
-  updateEmployee: (id: number, body: BodyModifyEmployee) => axiosInstance.put(`https://dummyjson.com/users/${id}`, body),
-  deleteEmployee: (id: number) => axiosInstance.delete(`https://dummyjson.com/users/${id}`),
+  updateEmployee: (id: number | string, body: BodyModifyEmployee) => axiosInstance.put(`https://dummyjson.com/users/${id}`, body),
+  deleteEmployee: (id: number | string) => axiosInstance.delete(`https://dummyjson.com/users/${id}`),
 };
 
 export default employeeApi; 

@@ -77,8 +77,6 @@ const EmployeeList = () => {
   
 
   const getAllEmployees = async () => {
-    console.log(sortBy)
-   
     setLoading(true)
     try {
       const res = search !== ''
@@ -97,7 +95,6 @@ const EmployeeList = () => {
           });
 
       const data = res.data;
-      console.log(data?.users)
       setEmployeeData(data)
     } catch (error: any) {
       console.log(error)
@@ -144,7 +141,7 @@ const EmployeeList = () => {
   };
 
 
-  const onFinishModifyEmployee = async () => {
+  const onFinishAddEmployee = async () => {
     const payload: BodyModifyEmployee = {
       ssn: formEmployee?.ssn,
       firstName: formEmployee?.firstName,
@@ -158,16 +155,82 @@ const EmployeeList = () => {
       }
     }
 
-    console.log(formEmployee)
-    console.log(payload)
     // return
 
     setLoading(true)
     try {
       const { data } = await employeeApi.addEmployee(payload)
-      console.log(data)
+      let newEmployeeData = [
+        data,
+        ...employeeData?.users
+      ]
+      setEmployeeData((prev: any) => ({
+        ...prev,
+        users: newEmployeeData
+      }));
+      setOpenModifyEmployee({ visible: false })
       setAlert({ open: true, message: "New employee has been added!", severity: "success" });
     } catch (error: any) {
+      console.log(error)
+      setAlert({ open: true, message: error.message, severity: "error" });
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const onFinishEditEmployee = async () => {
+    const payload: BodyModifyEmployee = {
+      ssn: formEmployee?.ssn,
+      firstName: formEmployee?.firstName,
+      lastName: formEmployee?.lastName,
+      age: formEmployee?.age,
+      email: formEmployee?.email,
+      phone: formEmployee?.phone,
+      company: {
+        title: formEmployee?.title,
+        department: formEmployee?.department
+      }
+    }
+
+    // return
+
+    setLoading(true)
+    try {
+      const { data } = await employeeApi.updateEmployee(formEmployee.id!, payload)
+      const modifyData = employeeData?.users?.map((dat:any) => {
+        if(dat?.id == formEmployee?.id) {
+          return data
+        } else {
+          return dat
+        }
+      })
+      setEmployeeData((prev: any) => ({
+        ...prev,
+        users: modifyData
+      }));
+      setOpenModifyEmployee({ visible: false })
+      setAlert({ open: true, message: "Employee data has been updated!", severity: "success" });
+    } catch (error: any) {
+      console.log(error)
+      setAlert({ open: true, message: error.message, severity: "error" });
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const onDeleteEmployee = async (id: string | number) => {
+    setLoading(true)
+    try {
+      await employeeApi.deleteEmployee(id)
+      const modifyData = employeeData?.users?.filter((dat: any) => dat?.id != id)
+      setEmployeeData((prev: any) => ({
+        ...prev,
+        users: modifyData
+      }));
+      setOpenModifyEmployee({ visible: false })
+      setAlert({ open: true, message: "Employee data has been deleted!", severity: "success" });
+    } catch (error: any) {
+      console.log(error)
       setAlert({ open: true, message: error.message, severity: "error" });
     } finally {
       setLoading(false)
@@ -176,7 +239,12 @@ const EmployeeList = () => {
 
   const columns: Column[] = [
   { name: 'ID', key: 'ssn' },
-  { name: 'Name', key: 'firstName' , render: (value, record) => <div className='flex items-center gap-2'><img src={record?.image} width={40}></img> {value} {record?.lastName}</div>},
+  { 
+    name: 'Name', 
+    key: 'firstName' , 
+    render: (value, record) => (
+      <div className='flex items-center gap-2'>{value} {record?.lastName}</div>)
+  },
   { name: 'Age', key: 'age', align: 'center' },
   // { name: 'Gender', key: 'gender', align: 'center' },
   { name: 'Email', key: 'email' },
@@ -206,7 +274,7 @@ const EmployeeList = () => {
           variant="contained"
           size="small"
           color='error'
-          // onClick={handleSort}
+          onClick={() => onDeleteEmployee(record?.id)}
           startIcon={<DeleteIcon fontSize="small" />}
           sx={{ textTransform: 'none'}}
         >
@@ -225,7 +293,10 @@ const EmployeeList = () => {
         <Button
           variant="contained"
           size="medium"
-          onClick={() => setOpenModifyEmployee({ visible: true })}
+          onClick={() => {
+            setFormEmployee(initialFormEmployee)
+            setOpenModifyEmployee({ visible: true })
+          }}
           startIcon={<AddIcon fontSize="small" />}
           sx={{ textTransform: 'none', paddingBlock: '0.45rem', marginLeft: '1rem'}}
         >
@@ -362,7 +433,7 @@ const EmployeeList = () => {
         setForm={setFormEmployee}
         resetForm={() => setFormEmployee(initialFormEmployee)}
         loading={loading}
-        onFinish={onFinishModifyEmployee}
+        onFinish={() => formEmployee?.id ? onFinishEditEmployee() :  onFinishAddEmployee()}
       />
     </>
   );
